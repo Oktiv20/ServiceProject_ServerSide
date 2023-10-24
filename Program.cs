@@ -68,4 +68,56 @@ app.MapGet("/checkuser/{uid}", (ServiceProjectDbContext db, string uid) =>
     }
 });
 
+//Create a User
+app.MapPost("/api/user", (ServiceProjectDbContext db, User user) =>
+{
+    db.Users.Add(user);
+    db.SaveChanges();
+    return Results.Created($"/api/user/{user.Id}", user);
+});
+
+//Get user by uid
+app.MapGet("/api/user/{uid}", (ServiceProjectDbContext db, string uid) =>
+{
+    var user = db.Users.Single(u => u.Uid == uid);
+    return user;
+});
+
+//Delete a user from a project
+app.MapDelete("/api/items/{id}", (ServiceProjectDbContext db, int id, string uid) =>
+{
+    var project = db.Projects.Where(p => p.Id == id).Include(I => I.Users).FirstOrDefault();
+    var user = db.Users.Where(u => u.Uid == uid).FirstOrDefault();
+    if (project == null)
+    {
+        return Results.NotFound("not found");
+    }
+
+    project.Users.Remove(user);
+    db.SaveChanges();
+    return Results.NoContent();
+});
+//Update a User
+app.MapPut("/api/Order/{id}", (ServiceProjectDbContext db, int id, User user) =>
+{
+    User UserToUpdate = db.Users.SingleOrDefault(user => user.Id == id);
+    if (UserToUpdate == null)
+    {
+        return Results.NotFound();
+    }
+    UserToUpdate.FirstName = user.FirstName;
+    UserToUpdate.LastName = user.LastName;
+    UserToUpdate.PhoneNumber = user.PhoneNumber;
+    UserToUpdate.Email = user.Email;
+    UserToUpdate.Uid = user.Uid;
+    UserToUpdate.ProfilePic = user.ProfilePic;
+    UserToUpdate.isStaff = user.isStaff;
+
+
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+
+
 app.Run();
