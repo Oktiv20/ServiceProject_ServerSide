@@ -55,6 +55,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+
+//Check if a user exists
 app.MapGet("/checkuser/{uid}", (ServiceProjectDbContext db, string uid) =>
 {
     var user = db.Users.Where(x => x.Uid == uid).ToList();
@@ -84,7 +86,7 @@ app.MapGet("/api/user/{uid}", (ServiceProjectDbContext db, string uid) =>
 });
 
 //Delete a user from a project
-app.MapDelete("/api/items/{id}", (ServiceProjectDbContext db, int id, string uid) =>
+app.MapDelete("/api/projectusers/{id}", (ServiceProjectDbContext db, int id, string uid) =>
 {
     var project = db.Projects.Where(p => p.Id == id).Include(I => I.Users).FirstOrDefault();
     var user = db.Users.Where(u => u.Uid == uid).FirstOrDefault();
@@ -97,8 +99,10 @@ app.MapDelete("/api/items/{id}", (ServiceProjectDbContext db, int id, string uid
     db.SaveChanges();
     return Results.NoContent();
 });
+
+
 //Update a User
-app.MapPut("/api/Order/{id}", (ServiceProjectDbContext db, int id, User user) =>
+app.MapPut("/api/user/{id}", (ServiceProjectDbContext db, int id, User user) =>
 {
     User UserToUpdate = db.Users.SingleOrDefault(user => user.Id == id);
     if (UserToUpdate == null)
