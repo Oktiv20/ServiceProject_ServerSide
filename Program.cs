@@ -1,11 +1,8 @@
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
-using System.Linq;
-using System.Dynamic;
-using System.Runtime.CompilerServices;
-using ServiceProject_ServerSide.Models;
+using Microsoft.EntityFrameworkCore;
 using ServiceProject_ServerSide;
+using ServiceProject_ServerSide.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -122,6 +119,108 @@ app.MapPut("/api/user/{id}", (ServiceProjectDbContext db, int id, User user) =>
     return Results.NoContent();
 });
 
+
+
+// PROJECTS ENDPOINTS
+
+
+// GET PROJECTS
+
+app.MapGet("/api/projects", (ServiceProjectDbContext db) =>
+{
+    List<Project> projects = db.Projects.ToList();
+    if (projects.Count == 0)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(projects);
+});
+
+
+// GET SINGLE PROJECT
+
+app.MapGet("/api/projects/{id}", (ServiceProjectDbContext db, int id) =>
+{
+    Project project = db.Projects.FirstOrDefault(project => project.Id == id);
+    if (project == null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(project);
+});
+
+
+// CREATE PROJECT
+
+app.MapPost("/api/projects", (ServiceProjectDbContext db, Project project) =>
+{
+    try
+    {
+        db.Add(project);
+        db.SaveChanges();
+        return Results.Created($"/api/projects/{project.Id}", project);
+    }
+    catch (DbUpdateException)
+    {
+        return Results.NotFound();
+    }
+});
+
+
+// UPDATE PROJECT
+
+app.MapPut("/api/projects/{projectId}", (ServiceProjectDbContext db, int projectId, Project project) =>
+{
+    Project updateProject = db.Projects.SingleOrDefault(p => p.Id == projectId);
+    if (updateProject == null)
+    {
+        return Results.NotFound();
+    }
+    updateProject.Name = project.Name;
+    updateProject.Description = project.Description;
+    updateProject.Location = project.Location;
+    updateProject.Image = project.Image;
+    updateProject.Duration = project.Duration;
+    updateProject.Date = project.Date;
+    updateProject.CategoryId = project.CategoryId;
+
+    db.SaveChanges();
+    return Results.NoContent();
+});
+
+
+// DELETE PROJECT
+
+app.MapDelete("/api/projects/{projectId}", (ServiceProjectDbContext db, int projectId) =>
+{
+    Project deleteProject = db.Projects.FirstOrDefault(p => p.Id == projectId);
+    if (deleteProject == null)
+    {
+        return Results.NotFound();
+    }
+    db.Remove(deleteProject);
+    db.SaveChanges();
+    return Results.Ok(deleteProject);
+});
+
+
+// GET USER'S PROJECTS
+
+app.MapGet("/api/userprojects/{userId}", (ServiceProjectDbContext db, int userId) =>
+{
+    var user = db.Users
+        .Include(u => u.Projects)
+        .FirstOrDefault(u => u.Id == userId);
+
+    if (user == null)
+    {
+        return Results.NotFound("User not found");
+    }
+
+    var projects = user.Projects.ToList();
+    return Results.Ok(projects);
+});
 
 
 app.Run();
