@@ -142,12 +142,26 @@ app.MapGet("/api/projects", (ServiceProjectDbContext db) =>
 
 app.MapGet("/api/projects/{id}", (ServiceProjectDbContext db, int id) =>
 {
-    Project project = db.Projects.FirstOrDefault(project => project.Id == id);
+    Project project = db.Projects
+    .Include(p => p.Users)
+    .FirstOrDefault(project => project.Id == id);
     if (project == null)
     {
         return Results.NotFound();
     }
     return Results.Ok(project);
+});
+
+
+// GET PROJECT BY CATEGORY
+
+app.MapGet("/api/projectsbycategory/{categoryId}", (ServiceProjectDbContext db, int categoryId) =>
+{
+    var projects = db.Projects
+    .Where(p => p.CategoryId == categoryId)
+    .ToList();
+
+    return Results.Ok(projects);
 });
 
 
@@ -222,5 +236,31 @@ app.MapGet("/api/userprojects/{userId}", (ServiceProjectDbContext db, int userId
     return Results.Ok(projects);
 });
 
+
+// ADD USER TO PROJECT
+
+app.MapPost("/api/projectusers/{projectId}/{userId}", (ServiceProjectDbContext db, int projectId, int userId) =>
+{
+    var project = db.Projects
+        .Include(p => p.Users)
+        .FirstOrDefault(p => p.Id == projectId);
+
+    var user = db.Users.FirstOrDefault(u => u.Id == userId);
+
+    if (project == null || user == null)
+    {
+        return Results.NotFound("Project or User not found");
+    }
+
+    if (project.Users.Any(u => u.Id == userId))
+    {
+        return Results.BadRequest("User is already associated with this project");
+    }
+
+    project.Users.Add(user);
+    db.SaveChanges();
+
+    return Results.Ok(user);
+});
 
 app.Run();
