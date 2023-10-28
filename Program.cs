@@ -128,7 +128,7 @@ app.MapPut("/api/user/{id}", (ServiceProjectDbContext db, int id, User user) =>
 
 app.MapGet("/api/projects", (ServiceProjectDbContext db) =>
 {
-    List<Project> projects = db.Projects.ToList();
+    List<Project> projects = db.Projects.Include(p => p.Category).ToList();
     if (projects.Count == 0)
     {
         return Results.NotFound();
