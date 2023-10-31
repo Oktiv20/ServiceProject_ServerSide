@@ -221,12 +221,12 @@ app.MapDelete("/api/projects/{projectId}", (ServiceProjectDbContext db, int proj
 
 // GET USER'S PROJECTS
 
-app.MapGet("/api/userprojects/{userId}", (ServiceProjectDbContext db, int userId) =>
+app.MapGet("/api/userprojects/{uid}", (ServiceProjectDbContext db, string uid) =>
 {
     var user = db.Users
         .Include(u => u.Projects)
         .ThenInclude(p => p.Category)
-        .FirstOrDefault(u => u.Id == userId);
+        .FirstOrDefault(u => u.Uid == uid);
 
     if (user == null)
     {
