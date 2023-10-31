@@ -225,6 +225,7 @@ app.MapGet("/api/userprojects/{userId}", (ServiceProjectDbContext db, int userId
 {
     var user = db.Users
         .Include(u => u.Projects)
+        .ThenInclude(p => p.Category)
         .FirstOrDefault(u => u.Id == userId);
 
     if (user == null)
