@@ -263,4 +263,17 @@ app.MapPost("/api/projectusers/{projectId}/{userId}", (ServiceProjectDbContext d
     return Results.Ok(user);
 });
 
+// GET Categories with their projects
+
+app.MapGet("/api/categories", (ServiceProjectDbContext db) =>
+{
+    List<Category> categories = db.Categories.Include(p => p.Projects).ToList();
+    if (categories.Count == 0)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(categories);
+});
+
 app.Run();
