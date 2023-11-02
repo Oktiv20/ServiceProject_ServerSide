@@ -83,7 +83,7 @@ app.MapGet("/api/user/{uid}", (ServiceProjectDbContext db, string uid) =>
 });
 
 //Delete a user from a project
-app.MapDelete("/api/projectusers/{id}", (ServiceProjectDbContext db, int id, string uid) =>
+app.MapDelete("/api/projectusers/{id}/{uid}", (ServiceProjectDbContext db, int id, string uid) =>
 {
     var project = db.Projects.Where(p => p.Id == id).Include(I => I.Users).FirstOrDefault();
     var user = db.Users.Where(u => u.Uid == uid).FirstOrDefault();
