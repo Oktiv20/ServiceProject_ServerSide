@@ -159,6 +159,7 @@ app.MapGet("/api/projectsbycategory/{categoryId}", (ServiceProjectDbContext db, 
 {
     var projects = db.Projects
     .Where(p => p.CategoryId == categoryId)
+    .Include(p => p.Category)
     .ToList();
 
     return Results.Ok(projects);
